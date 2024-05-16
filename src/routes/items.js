@@ -13,7 +13,7 @@ const router = express.Router();
  * GET /items
  * Fetches the list of all shopping items.
  */
-router.get("/items", (req, res) => {
+router.get("/", (req, res) => {
   const items = readData();
   res.json(items);
 });
@@ -23,7 +23,7 @@ router.get("/items", (req, res) => {
  * Adds a new item to the shopping list.
  * Expects a JSON object with 'name' and 'price'.
  */
-router.post("/items", validateItem, (req, res) => {
+router.post("/", validateItem, (req, res) => {
   const items = readData();
   const newItem = req.body;
   items.push(newItem);
@@ -35,7 +35,7 @@ router.post("/items", validateItem, (req, res) => {
  * GET /items/:name
  * Fetches a single item by name.
  */
-router.get("/items/:name", (req, res) => {
+router.get("/:name", (req, res) => {
   const items = readData();
   const item = items.find((i) => i.name === req.params.name);
   if (item) {
@@ -50,7 +50,7 @@ router.get("/items/:name", (req, res) => {
  * Updates a single item's name and/or price.
  * Expects a JSON object with the updated 'name' and/or 'price'.
  */
-router.patch("/items/:name", validateItem, (req, res) => {
+router.patch("/:name", validateItem, (req, res) => {
   const items = readData();
   const itemIndex = items.findIndex((i) => i.name === req.params.name);
   if (itemIndex !== -1) {
@@ -67,7 +67,7 @@ router.patch("/items/:name", validateItem, (req, res) => {
  * DELETE /items/:name
  * Deletes a single item by name.
  */
-router.delete("/items/:name", (req, res) => {
+router.delete("/:name", (req, res) => {
   const items = readData();
   const itemIndex = items.findIndex((i) => i.name === req.params.name);
   if (itemIndex !== -1) {
