@@ -7,7 +7,7 @@ import request from "supertest";
 import app from "../src/app.js";
 import { writeData } from "../src/utils/dataStore.js";
 
-// Clear the data before each test
+// Clear the data before each test to ensure isolation
 beforeEach(() => {
   writeData([]);
 });
@@ -21,7 +21,7 @@ describe("GET /items", () => {
 
   test("should return a list of items", async () => {
     const items = [{ name: "popsicle", price: 1.45 }];
-    writeData(items);
+    writeData(items); // Setting initial state
     const res = await request(app).get("/items");
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual(items);
@@ -41,12 +41,21 @@ describe("POST /items", () => {
     expect(res.statusCode).toEqual(400);
     expect(res.body).toEqual({ error: "Invalid item format" });
   });
+
+  test("should return an error for invalid JSON", async () => {
+    const res = await request(app)
+      .post("/items")
+      .set("Content-Type", "application/json")
+      .send('{"name": "popsicle" "price": 1.45}');
+    expect(res.statusCode).toEqual(400);
+    expect(res.body).toEqual({ error: "Invalid JSON" });
+  });
 });
 
 describe("GET /items/:name", () => {
   test("should return an item", async () => {
     const items = [{ name: "popsicle", price: 1.45 }];
-    writeData(items);
+    writeData(items); // Setting initial state
     const res = await request(app).get("/items/popsicle");
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual(items[0]);
@@ -62,7 +71,7 @@ describe("GET /items/:name", () => {
 describe("PATCH /items/:name", () => {
   test("should update an item", async () => {
     const items = [{ name: "popsicle", price: 1.45 }];
-    writeData(items);
+    writeData(items); // Setting initial state
     const updatedItem = { name: "new popsicle", price: 2.45 };
     const res = await request(app).patch("/items/popsicle").send(updatedItem);
     expect(res.statusCode).toEqual(200);
@@ -77,12 +86,22 @@ describe("PATCH /items/:name", () => {
     expect(res.statusCode).toEqual(404);
     expect(res.body).toEqual({ error: "Item not found" });
   });
+
+  test("should not update an item with invalid data", async () => {
+    const items = [{ name: "popsicle", price: 1.45 }];
+    writeData(items); // Setting initial state
+    const res = await request(app)
+      .patch("/items/popsicle")
+      .send({ name: "new popsicle" });
+    expect(res.statusCode).toEqual(400);
+    expect(res.body).toEqual({ error: "Invalid item format" });
+  });
 });
 
 describe("DELETE /items/:name", () => {
   test("should delete an item", async () => {
     const items = [{ name: "popsicle", price: 1.45 }];
-    writeData(items);
+    writeData(items); // Setting initial state
     const res = await request(app).delete("/items/popsicle");
     expect(res.statusCode).toEqual(200);
     expect(res.body).toEqual({ message: "Deleted" });
